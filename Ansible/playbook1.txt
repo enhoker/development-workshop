@@ -1,0 +1,30 @@
+---
+
+- name: One
+  hosts: all
+  become: yes
+
+  tasks:
+
+    - name: Intall CentOS nginx
+      yum:
+        name: nginx
+        state: latest
+      when: ansible_os_family == "RedHat"
+
+    - name: Intall Debian nginx
+      apt:
+        name: nginx
+        state: latest
+      when: ansible_os_family == "Debian"
+
+    - name: Test
+      shell: ps axuf|grep 'nginx'|grep -v "grep" | tr -d "\n" | cat
+      register: test_running_nginx
+      changed_when: False
+
+    - name: Start
+      service:
+        name: nginx
+        state: started
+      when:  test_running_nginx.stdout != ""

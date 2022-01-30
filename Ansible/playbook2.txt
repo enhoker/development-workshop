@@ -1,0 +1,63 @@
+---
+- name: Two
+  hosts: all
+  become: yes
+
+  tasks:
+
+    - name: Check app exist
+      stat:
+        path: /home/mftiedu/enhoker
+      register: app_details
+
+    - name: Run apt-update
+      apt: update_cache=yes
+      when: ansible_os_family == "Debian"
+
+    - name: Update yum
+      yum: update_cache=yes
+      when: ansible_os_family == "RedHat"
+
+    - name: Copy App
+      copy:
+        src: ./vbifaa_app
+        dest: /home/mftiedu/enhoker
+      when: not app_details.stat.exists
+
+    - name: Intall CentOS nginx
+      yum:
+        name: nginx
+        state: latest
+      when: ansible_os_family == "RedHat"
+
+    - name: Intall Debian nginx
+      apt:
+        name: nginx
+        state: latest
+      when: ansible_os_family == "Debian"
+
+    - name: Install CentOS python
+      raw: yum -y install python3
+      when: ansible_os_family == "RedHat" and check_python.rc != 0
+
+    - name: Install Debian python
+      raw: apt -y install python3
+      when: ansible_os_family == "Debian" and check_python.rc != 0
+
+    - name: Check Exists venv
+      stat:
+        path: /home/mftiedu/enhoker/venv
+      register: venv_details
+
+    - name: Install venv
+      shell: python3 -m venv venv
+      args:
+        chdir: /home/mftiedu/enhoker
+      when: not venv_details.stat.exists
+
+    - name: Install and Start
+      shell: . venv/bin/activate && pip install -r my_app/requirements.txt && python manage.py runserver
+      args:
+        chdir: /home/mftiedu/enhoker
+
+
