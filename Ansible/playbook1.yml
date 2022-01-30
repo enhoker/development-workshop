@@ -1,5 +1,4 @@
 ---
-
 - name: One
   hosts: all
   become: yes
