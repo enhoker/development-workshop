@@ -1,0 +1,2 @@
+[debian_group]
+debian10 ansible_host=194.87.107.68 virtual_domain=mftiedu.debian
